@@ -27,38 +27,37 @@ int FileSize(string & filename)
     return size;
 }
 
-int ReadValue(ifstream & in)
+int ReadValue(ifstream & in, bool & eof)
 {
     int val = 0;
     char buf = 0;
     int mul = 1;
+    char eof_ = in.eof();
+    eof = 0;
     buf = in.get();
-    if (buf == '1') 
+    if (buf != eof_)
     {
-        mul = -1;
-    }
-    for (int i = 1; i < glenth; ++i)
-    {
-        buf = in.get();
-        if (buf == '1')
-            val+=pow(2,glenth - i - 1);
+        if (buf == '1') 
+        {
+            mul = -1;
+        }
+        for (int i = 1; i < glenth; ++i)
+        {
+            buf = in.get();
+            if (buf == eof_)
+                {
+                    break;
+                    eof = 1;
+                }
+            if (buf == '1')
+                val+=pow(2,glenth - i - 1);
+        }
     }
     return val * mul;
 }
 
-void ShotSort(ifstream & in, ofstream & out, int len) // сортировка файла
+void WriteValue(ofstream & out, int & val)
 {
-    vector<int> buf(len); //буфер чисел
-    for (int i=0; i < len; ++i)
-    {
-        buf[i] = ReadValue(in);
-        cout << buf[i] << endl;
-    }
-    cout << endl << endl;
-    sort(begin(buf), end(buf)); // сортировка
-    for(const auto& val: buf )
-    {
-        cout << val << endl;
         int buf = val;
         if (buf < 0)
             out << 1;
@@ -73,16 +72,40 @@ void ShotSort(ifstream & in, ofstream & out, int len) // сортировка ф
             if (res == 1)
                 buf-=pow(2, i);
         }
+}
+
+void ShotSort(ifstream & in, ofstream & out, int len) // сортировка файла
+{
+    vector<int> buf(len); //буфер чисел
+    bool eof = 0;
+    for (int i=0; i < len; ++i)
+    {
+        buf[i] = ReadValue(in, eof);
+        cout << buf[i] << endl;
+    }
+    cout << endl << endl;
+    sort(begin(buf), end(buf)); // сортировка
+    for(auto& val: buf )
+    {
+        cout << val << endl;
+        WriteValue(out, val);
     }
 }
 
-struct StatsS
+int MinFinder(int * arr, const int & n)
 {
-    string path;
-    int size = 0;
-    bool sorted = false;
-    StatsS(string & path) : path(path) {}
-};
+    int min = INT_FAST32_MAX;
+    int minId = 0;
+    for (int i = 0; i < n; ++i)
+    {
+        if (arr[i] < min)
+        {
+            min = arr[i];
+            minId = i;
+        }
+    }
+    return minId;
+}
 
 int main()
 {
@@ -118,20 +141,37 @@ int main()
    
     // Блок слияния
    
-        int nCloset = 0; // число закрытых буферных файлов
+        int nClosed = 0; // число закрытых буферных файлов
         ifstream * sorts = new ifstream[iterations]; // массив считываемых файлов (всё теже буферные но на чтение)
+        int * redVals = new int [iterations]; // считываемые значения
+        bool * eofs = new bool[iterations]; // достигнут ли конец файла i
+        ofstream out(outpath);
         for (int i = 0; i < iterations; ++i)
         {
             sorts[i] = ifstream(base_child_name + to_string(i) + ".bi"); // файлы открываются
+            eofs[i] = false;
         }
-        
+        for (int i = 0; i < iterations; ++i) // первичное считывание
+        {
+            redVals[i] = ReadValue(sorts[i], eofs[i]);
+        }
+        int smallestId = 0;
         do{ // сортировка вставкой по всем буферным файлам до тех пор, пока не не зкароются все
-            for (int i = 0; i < iterations; ++i)
+            smallestId = MinFinder(redVals, iterations);
+            WriteValue(out, redVals[smallestId]);
+            if (!(sorts[smallestId].is_open()))
+                redVals[smallestId] = INT_FAST32_MAX;
+            else
+                redVals[smallestId] = ReadValue(sorts[smallestId], eofs[smallestId]);
+            if (eofs[smallestId] == 1)
             {
-                
+                ++nClosed;
+                sorts[smallestId].close();
             }
-        }while(true);
-//sorts[i].close()
+        }while(nClosed != iterations);
+        delete[] eofs;
+        delete[] redVals;
         delete[] sorts;
+        out.close();
     return 0;
 }
