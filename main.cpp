@@ -175,6 +175,11 @@ int main()
             {
                 ++nClosed;
                 sorts[smallestId].close();
+                    string childPath = (base_child_name + to_string(smallestId) + ".bi");
+                    const int length = childPath.length();
+                    char* char_array = new char[length + 1]; 
+                    strcpy(char_array, childPath.c_str()); 
+                    remove(char_array);
             }
         }while(nClosed != iterations);
         delete[] eofs;
