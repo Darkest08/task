@@ -32,10 +32,9 @@ int ReadValue(ifstream & in, bool & eof)
     int val = 0;
     char buf = 0;
     int mul = 1;
-    char eof_ = in.eof();
     eof = 0;
     buf = in.get();
-    if (buf != eof_)
+    if (!in.eof())
     {
         if (buf == '1') 
         {
@@ -44,14 +43,18 @@ int ReadValue(ifstream & in, bool & eof)
         for (int i = 1; i < glenth; ++i)
         {
             buf = in.get();
-            if (buf == eof_)
+            if (in.eof())
                 {
-                    break;
                     eof = 1;
+                    break;
                 }
             if (buf == '1')
                 val+=pow(2,glenth - i - 1);
         }
+    }
+    else
+    {
+        eof = 1;
     }
     return val * mul;
 }
@@ -81,13 +84,13 @@ void ShotSort(ifstream & in, ofstream & out, int len) // сортировка ф
     for (int i=0; i < len; ++i)
     {
         buf[i] = ReadValue(in, eof);
-        cout << buf[i] << endl;
+       // cout << buf[i] << endl;
     }
     cout << endl << endl;
     sort(begin(buf), end(buf)); // сортировка
     for(auto& val: buf )
     {
-        cout << val << endl;
+       // cout << val << endl;
         WriteValue(out, val);
     }
 }
@@ -156,13 +159,18 @@ int main()
             redVals[i] = ReadValue(sorts[i], eofs[i]);
         }
         int smallestId = 0;
+        int buf;
+        cout << "problematic part" << endl;
         do{ // сортировка вставкой по всем буферным файлам до тех пор, пока не не зкароются все
             smallestId = MinFinder(redVals, iterations);
             WriteValue(out, redVals[smallestId]);
             if (!(sorts[smallestId].is_open()))
                 redVals[smallestId] = INT_FAST32_MAX;
             else
+            {
                 redVals[smallestId] = ReadValue(sorts[smallestId], eofs[smallestId]);
+            }
+
             if (eofs[smallestId] == 1)
             {
                 ++nClosed;
