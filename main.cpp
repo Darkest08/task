@@ -117,9 +117,9 @@ int main()
             statex.dwLength = sizeof (statex);
             GlobalMemoryStatusEx (&statex);
         unsigned int global_msize = (int)statex.ullTotalPhys; //размер оперативной памяти
-        unsigned int msize = 40;//ceil(global_msize / 4); //размер доступной для кучи оперативной памяти
+        unsigned int msize = 80;//ceil(global_msize / 4); //размер доступной для кучи оперативной памяти
 
-        int buf = ceil(fsize / msize);
+        int buf = ceil(fsize / (trunc(msize/glenth)*glenth));
         unsigned int iterations = max(buf, 1); //вычисляю число итераций работы программы (точнее число малых файлов)
 
     // Блок чтения и первичной сортировки
