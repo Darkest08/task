@@ -84,13 +84,10 @@ void ShotSort(ifstream & in, ofstream & out, int len) // сортировка ф
     for (int i=0; i < len; ++i)
     {
         buf[i] = ReadValue(in, eof);
-       // cout << buf[i] << endl;
     }
-    cout << endl << endl;
     sort(begin(buf), end(buf)); // сортировка
     for(auto& val: buf )
     {
-       // cout << val << endl;
         WriteValue(out, val);
     }
 }
@@ -101,7 +98,7 @@ int MinFinder(int * arr, const int & n)
     int minId = 0;
     for (int i = 0; i < n; ++i)
     {
-        if (arr[i] < min)
+        if (arr[i] <= min)
         {
             min = arr[i];
             minId = i;
@@ -121,9 +118,10 @@ int main()
             statex.dwLength = sizeof (statex);
             GlobalMemoryStatusEx (&statex);
         unsigned int global_msize = (int)statex.ullTotalPhys; //размер оперативной памяти
-        unsigned int msize = ceil(global_msize / 4); //размер доступной для кучи оперативной памяти
+        unsigned int msize = 40;//ceil(global_msize / 4); //размер доступной для кучи оперативной памяти
 
-        unsigned int iterations = (ceil(fsize / msize) || 1); //вычисляю число итераций работы программы (точнее число малых файлов)
+        int buf = ceil(fsize / msize);
+        unsigned int iterations = max(buf, 1); //вычисляю число итераций работы программы (точнее число малых файлов)
 
     // Блок чтения и первичной сортировки
 
@@ -158,22 +156,18 @@ int main()
         {
             redVals[i] = ReadValue(sorts[i], eofs[i]);
         }
-        int smallestId = 0;
-        int buf;
-        cout << "problematic part" << endl;
+        int smallestId = 0; //id наименьшего элемента
+        system("PAUSE");
         do{ // сортировка вставкой по всем буферным файлам до тех пор, пока не не зкароются все
             smallestId = MinFinder(redVals, iterations);
+            cout << " " << smallestId << " "<< redVals[smallestId] << endl;
             WriteValue(out, redVals[smallestId]);
-            if (!(sorts[smallestId].is_open()))
-                redVals[smallestId] = INT_FAST32_MAX;
-            else
-            {
-                redVals[smallestId] = ReadValue(sorts[smallestId], eofs[smallestId]);
-            }
+            redVals[smallestId] = ReadValue(sorts[smallestId], eofs[smallestId]);
 
             if (eofs[smallestId] == 1)
             {
                 ++nClosed;
+                redVals[smallestId] = INT_FAST32_MAX;
                 sorts[smallestId].close();
                     string childPath = (base_child_name + to_string(smallestId) + ".bi");
                     const int length = childPath.length();
