@@ -109,36 +109,77 @@ int MinFinder(int * arr, const int & n, bool * eofs) //функция нахож
 int main()
 {
     // блок объявления основных данных
-        string inpath = "input.bi";
-        const string base_child_name = "child";
-        const string outpath = "output.bi";
+        unsigned int progress = 0; //прогресс выполнения программы
+        unsigned int progressLimit = 0; // максимальный прогресс
+        string inpath = "input.bi"; // стндартный путь к файлу ввода
+        const string baseChildName = "child"; // имя для буферных файлов
+        const string outpath = "output.bi"; //путь результирующего файла
+        // вводим имя файла
+            string userInput = "";
+            unsigned int userInputInt = 0;
+            cout << "Input sorting binary file name[Y] or select default(input.bi)[N] the file have to be located in the same directory as this programm [Y/N]" << endl;
+            cin >> userInput;
+            if (userInput == "Y")
+            {
+                cout << "Input file name to sort the file must be binary (*.bi): "<< endl;
+                cin >> inpath;
+            }
+            else
+                if (userInput == "N")
+                {
+                    cout << "input.bi file selected for sorting" << endl;
+                }
+                else
+                {
+                    cout << "Invalid input, programm terminated" << endl;
+                    return 1;
+                }
+        // проверка существования файла
+        ifstream iff(inpath);
+            if(!iff)
+            {
+                cout<<"File is not presented, programm terminated"<< endl;
+                return 2;
+            }
+            else 
+                cout<<"File is presented"<< endl;    
+        // работаем с доступной памятью
+            //считаю значение по умолчанию
+                MEMORYSTATUSEX statex;
+                statex.dwLength = sizeof (statex);
+                GlobalMemoryStatusEx (&statex);
+            unsigned int global_msize = (int)statex.ullTotalPhys; //размер оперативной памяти
+            unsigned int msize = ceil(global_msize / 4); //размер доступной для кучи оперативной памяти по умолчанию
+            cout << "Input amount of memory (approximately) the programm should use (int bytes). Input 0 for automatic choise." << endl;
+            cin >> userInputInt;
+            if (userInputInt > 0)
+            {
+                msize = min(msize, userInputInt); // выбираем размер доступной памяти
+            }
+        cout << "The programm will use approximately " << msize << " bytes of RAM" << endl;
         unsigned int fsize = FileSize(inpath); //размер читаемого файла
-            MEMORYSTATUSEX statex;
-            statex.dwLength = sizeof (statex);
-            GlobalMemoryStatusEx (&statex);
-        unsigned int global_msize = (int)statex.ullTotalPhys; //размер оперативной памяти
-        unsigned int msize = 80;//ceil(global_msize / 4); //размер доступной для кучи оперативной памяти
-
-        int buf = ceil(fsize / (trunc(msize/glenth)*glenth));
+        cout<< "Fsize " << fsize << endl;
+        int buf = ceil(fsize / (trunc(max(msize, glenth)/glenth)*glenth));
+        cout <<"buf "<< buf << endl;
         unsigned int iterations = max(buf, 1); //вычисляю число итераций работы программы (точнее число малых файлов)
-
+        progressLimit = iterations * 2;
     // Блок чтения и первичной сортировки
-
+        cout << iterations << endl;
         ifstream in(inpath, ifstream::binary); // поток чтения основного файла
 
         ofstream * children = new ofstream[iterations]; // выделяю память для подфайлов
-
+        
         int defSize = ceil(fsize / iterations / glenth); // стандартное число бит на файл
         int minSize = (fsize / glenth - (iterations-1)*defSize); //минимальное число бит на файл (остаток)
         for (int i = 0; i < iterations; ++i)
         {
-            children[i] = ofstream(base_child_name + to_string(i) + ".bi"); // создаём файл буфера
+            children[i] = ofstream(baseChildName + to_string(i) + ".bi"); // создаём файл буфера
             ShotSort(in, children[i], min(defSize, minSize)); // сортируем буферный файл
             children[i].close(); //закрываю сортированный файл
+            cout << ((double)(++progress) / (double)progressLimit * 100) << "%" << endl; //выводим прогресс выполнения
         }
         delete[] children; // удаляю массив на запись, так как мне он больше не нужен;
         in.close(); // закрываю входной файл, т.к. он уже считан
-   
     // Блок слияния
    
         int nClosed = 0; // число закрытых буферных файлов
@@ -148,7 +189,7 @@ int main()
         ofstream out(outpath);
         for (int i = 0; i < iterations; ++i)
         {
-            sorts[i] = ifstream(base_child_name + to_string(i) + ".bi"); // файлы открываются
+            sorts[i] = ifstream(baseChildName + to_string(i) + ".bi"); // файлы открываются
             eofs[i] = false;
         }
         for (int i = 0; i < iterations; ++i) // первичное считывание
@@ -156,7 +197,6 @@ int main()
             redVals[i] = ReadValue(sorts[i], eofs[i]);
         }
         int smallestId = 0; //id наименьшего элемента
-        system("PAUSE");
         do{ // сортировка вставкой по всем буферным файлам до тех пор, пока не не зкароются все
             smallestId = MinFinder(redVals, iterations, eofs); //нахожу Id наименьшего числа в массиве вставки
             WriteValue(out, redVals[smallestId]); // записываю наименьшее в файл вывода
@@ -164,10 +204,11 @@ int main()
 
             if (eofs[smallestId] == 1) // если достигнут конец буферного файла, то он закрывается, на место числа ставится заглушка в виде максимально возможного числа
             {
+                cout << ((double)(++progress) / (double)progressLimit * 100) << "%" << endl; //выводим прогресс выполнения
                 ++nClosed;
                 redVals[smallestId] = INT_FAST32_MAX;
                 sorts[smallestId].close();
-                    string childPath = (base_child_name + to_string(smallestId) + ".bi");
+                    string childPath = (baseChildName + to_string(smallestId) + ".bi");
                     const int length = childPath.length();
                     char* char_array = new char[length + 1]; 
                     strcpy(char_array, childPath.c_str()); 
@@ -179,5 +220,6 @@ int main()
             delete[] redVals;
             delete[] sorts;
         out.close();
+        cout << "Programm complited successfully. Please check output.bi for the results" << endl;
     return 0;
 }
