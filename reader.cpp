@@ -11,38 +11,40 @@ int main()
     cin >> path;
     ifstream in(path);
     int eof = 0;
+    int size = 0;
     do 
     {
-    int val = 0;
-    char buf = 0;
-    int mul = 1;
-    buf = in.get();
-    if (!in.eof())
-    {
-        if (buf == '1') 
+        int val = 0;
+        char buf = 0;
+        int mul = 1;
+        buf = in.get();
+        if (!in.eof())
         {
-            mul = -1;
+            if (buf == '1') 
+            {
+                mul = -1;
+            }
+            for (int i = 1; i < glenth; ++i)
+            {
+                buf = in.get();
+                if (in.eof())
+                    {
+                        eof = 1;
+                        break;
+                    }
+                if (buf == '1')
+                    val+=pow(2,glenth - i - 1);
+            }
+            ++size;
+        cout << val * mul << ' ';
         }
-        for (int i = 1; i < glenth; ++i)
+        else
         {
-            buf = in.get();
-            if (in.eof())
-                {
-                    eof = 1;
-                    break;
-                }
-            if (buf == '1')
-                val+=pow(2,glenth - i - 1);
+            eof = 1;
         }
-    }
-    else
-    {
-        eof = 1;
-    }
-    cout << val * mul << ' ';
     }
     while(eof != 1);
 
-    cout << endl;
+    cout << endl << size << endl;
     return 0;
 }
