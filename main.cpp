@@ -8,16 +8,16 @@
 #include <algorithm>
 using namespace std;
 
-const unsigned int glenth = 32;
+const unsigned int glenth = 32; // длинна слова/числа в бинарном файле
 
-int FileSize(string & filename)
+int FileSize(string & filename) // функция определния длины файла (в байтах, хотя должно быть в битах ._.), получает путь к файлу, выводит его размер
 {
     ifstream in(filename, ifstream::binary);
     int size = 0; 
 
     while (!in.eof()) { 
         in.get();       
-        ++size;              
+        ++size;
     }
 
     in.close();
@@ -27,7 +27,7 @@ int FileSize(string & filename)
     return size;
 }
 
-int ReadValue(ifstream & in, bool & eof)
+int ReadValue(ifstream & in, bool & eof) // функция чтения значения (поток чтения, возвращаемое значение (достигнут конец или нет))
 {
     int val = 0;
     char buf = 0;
@@ -36,20 +36,20 @@ int ReadValue(ifstream & in, bool & eof)
     buf = in.get();
     if (!in.eof())
     {
-        if (buf == '1') 
+        if (buf == '1') // определяю знак числа
         {
             mul = -1;
         }
-        for (int i = 1; i < glenth; ++i)
+        for (int i = 1; i < glenth; ++i) // считываю основное число
         {
             buf = in.get();
             if (in.eof())
                 {
-                    eof = 1;
+                    eof = 1; //если конец файла, то выходим
                     break;
                 }
             if (buf == '1')
-                val+=pow(2,glenth - i - 1);
+                val+=pow(2,glenth - i - 1); // если считали 1, то увеличиваем число вывода
         }
     }
     else
@@ -59,46 +59,45 @@ int ReadValue(ifstream & in, bool & eof)
     return val * mul;
 }
 
-void WriteValue(ofstream & out, int & val)
+void WriteValue(ofstream & out, int val) //функция записи (поток записи, число для записи)
 {
-        int buf = val;
-        if (buf < 0)
+        if (val < 0) // определяем первый бит знака
             out << 1;
         else
             out << 0;
         int res = 0;
-        buf = abs(buf);
-        for (int i = glenth - 2; i > -1; --i)
+        val = abs(val); // стираю знак
+        for (int i = glenth - 2; i > -1; --i) // цикл побитовой записи
         {
-            res = trunc(buf / pow(2, i));
+            res = trunc(val / pow(2, i));
             out << res;
             if (res == 1)
-                buf-=pow(2, i);
+                val-=pow(2, i);
         }
 }
 
-void ShotSort(ifstream & in, ofstream & out, int len) // сортировка файла
+void ShotSort(ifstream & in, ofstream & out, int len) // сортировка файла (входной поток, поток записи, длинна файла)
 {
     vector<int> buf(len); //буфер чисел
-    bool eof = 0;
-    for (int i=0; i < len; ++i)
+    bool eof = 0; // заглушка
+    for (int i=0; i < len; ++i) //чтение файла
     {
-        buf[i] = ReadValue(in, eof);
+        buf[i] = ReadValue(in, eof); //чтение числа
     }
     sort(begin(buf), end(buf)); // сортировка
     for(auto& val: buf )
     {
-        WriteValue(out, val);
+        WriteValue(out, val); // запись в выбранный файл
     }
 }
 
-int MinFinder(int * arr, const int & n)
+int MinFinder(int * arr, const int & n, bool * eofs) //функция нахождения минимально числа в массиве (стандарт)
 {
     int min = INT_FAST32_MAX;
     int minId = 0;
     for (int i = 0; i < n; ++i)
     {
-        if (arr[i] <= min)
+        if (arr[i] <= min && !eofs[i]) // находим минимум, исключаем повторный выбор закрытых файлов
         {
             min = arr[i];
             minId = i;
@@ -159,12 +158,11 @@ int main()
         int smallestId = 0; //id наименьшего элемента
         system("PAUSE");
         do{ // сортировка вставкой по всем буферным файлам до тех пор, пока не не зкароются все
-            smallestId = MinFinder(redVals, iterations);
-            cout << " " << smallestId << " "<< redVals[smallestId] << endl;
-            WriteValue(out, redVals[smallestId]);
-            redVals[smallestId] = ReadValue(sorts[smallestId], eofs[smallestId]);
+            smallestId = MinFinder(redVals, iterations, eofs); //нахожу Id наименьшего числа в массиве вставки
+            WriteValue(out, redVals[smallestId]); // записываю наименьшее в файл вывода
+            redVals[smallestId] = ReadValue(sorts[smallestId], eofs[smallestId]); // читаю новое число из файла, откуда произошла запись
 
-            if (eofs[smallestId] == 1)
+            if (eofs[smallestId] == 1) // если достигнут конец буферного файла, то он закрывается, на место числа ставится заглушка в виде максимально возможного числа
             {
                 ++nClosed;
                 redVals[smallestId] = INT_FAST32_MAX;
@@ -175,10 +173,11 @@ int main()
                     strcpy(char_array, childPath.c_str()); 
                     remove(char_array);
             }
-        }while(nClosed != iterations);
-        delete[] eofs;
-        delete[] redVals;
-        delete[] sorts;
+        }while(nClosed != iterations); //когда все файлы закрылись цикл заканчивается
+        //чистка памяти
+            delete[] eofs;
+            delete[] redVals;
+            delete[] sorts;
         out.close();
     return 0;
 }
