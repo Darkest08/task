@@ -15,28 +15,11 @@ int main()
     do 
     {
         int val = 0;
-        char buf = 0;
-        int mul = 1;
-        buf = in.get();
+        in.read((char*)&val, sizeof(val));
         if (!in.eof())
         {
-            if (buf == '1') 
-            {
-                mul = -1;
-            }
-            for (int i = 1; i < glenth; ++i)
-            {
-                buf = in.get();
-                if (in.eof())
-                    {
-                        eof = 1;
-                        break;
-                    }
-                if (buf == '1')
-                    val+=pow(2,glenth - i - 1);
-            }
             ++size;
-        cout << val * mul << ' ';
+            cout << val << ' ';
         }
         else
         {
