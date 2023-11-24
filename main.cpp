@@ -53,7 +53,7 @@ void ShotSort(ifstream & in, ofstream & out, int len) // сортировка ф
 
 int MinFinder(vector<int> arr, const int & n, vector<bool> eofs) //функция нахождения минимального числа в векторе (стандарт)
 {
-    int min = INT_FAST32_MAX;
+    int min = INT32_MAX;
     int minId = 0;
     for (int i = 0; i < n; ++i)
     {
@@ -106,8 +106,13 @@ int main()
                 cout<<"File is presented"<< endl;
 
         unsigned int msize = 1073741824; // 1 гигабайт
-        unsigned int fsize = FileSize(inpath); //размер читаемого файла
-        int buf = ceil(fsize / msize);
+        int fsize = FileSize(inpath); //размер читаемого файла
+        if (fsize == -1)
+        {
+            cout << "File reading error. Programm terminated." << endl;
+            return 3;
+        }
+        int buf = ceil((double)fsize / (double)msize);
         unsigned int iterations = max(buf, 1); //вычисляю число итераций работы программы (точнее число малых файлов)
         progressLimit = iterations * 2;
     // Блок чтения и первичной сортировки
@@ -154,7 +159,7 @@ int main()
             {
                 cout << ((double)(++progress) / (double)progressLimit * 100) << "%" << endl; //выводим прогресс выполнения
                 ++nClosed;
-                redVals[smallestId] = INT_FAST32_MAX;
+                redVals[smallestId] = INT32_MAX;
                 eofs[smallestId] = 1;
                 sorts[smallestId].close();
                     string childPath = (baseChildName + to_string(smallestId) + ".bin");
