@@ -69,7 +69,7 @@ void SplitSort(string inPath, int iterations, int fsize, string baseChildName, u
         int defSize = ceil(fsize / iterations / glength); // стандартное число бит на файл
         for (int i = 0; i < iterations; ++i)
         {
-            children[i] = ofstream(baseChildName + to_string(i) + ".bin"); // создаём файл буфера
+            children[i] = ofstream(baseChildName + to_string(i) + ".bin", ios::binary); // создаём файл буфера
             ShotSort(in, children[i], defSize); // сортируем буферный файл
             children[i].close(); //закрываю сортированный файл
             cout << ((double)(++progress) / (double)progressLimit * 100) << "%" << endl; //выводим прогресс выполнения
@@ -91,7 +91,7 @@ void InsertionSort(int iterations, string outPath, string baseChildName, unsigne
 
         for (int i = 0; i < iterations; ++i)
         {
-            sorts[i] = ifstream(baseChildName + to_string(i) + ".bin"); // файлы открываются
+            sorts[i] = ifstream(baseChildName + to_string(i) + ".bin", ios::binary); // файлы открываются
         }
 
         for (int i = 0; i < iterations; ++i) // первичное считывание
@@ -174,9 +174,10 @@ int main()
     // Блок чтения и разделённой сортировки
         SplitSort(inPath, iterations, fsize, baseChildName, progress, progressLimit);
 
+    system("Pause");
     // Блок слияния
         InsertionSort(iterations, outPath, baseChildName, progress, progressLimit);
-        
+
         cout << "Programm completed successfully. Please check output.bin for the results" << endl;
     return 0;
 }
