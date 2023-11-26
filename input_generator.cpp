@@ -11,7 +11,7 @@ int main()
     ofstream fout("input.bin", ios::binary);
     int buf = 0;
     int mul = -1;
-    unsigned long int size = 50;
+    unsigned long int size = 50; //число чисел в сортируемом файле
     for (unsigned long int i = 0; i < size; ++i)
     {
         if ((rand() % 2) == 1)
