@@ -11,7 +11,7 @@ const unsigned int glength = 4; // длина слова/числа в бина�
 
 int FileSize(string & filename) // функция определения длины файла (в байтах, хотя должно быть в битах ._.), получает путь к файлу, выводит его размер
 {
-    FILE *fp = fopen(filename.c_str(), "r");
+    FILE * fp = fopen(filename.c_str(), "r");
     fseek(fp, 0L, SEEK_END);    // ищем EOF
     int size = ftell(fp);       // получаем текущую позицию
     rewind(fp);
@@ -23,7 +23,7 @@ int ReadValue(ifstream & in, bool & eof) // функция чтения знач
 {
     int val = 0;
 
-    in.read((char*)&val, sizeof(val));
+    in.read((char*) & val, sizeof(val));
     if (in.eof())
     {
         eof = 1;
@@ -40,9 +40,9 @@ void ShotSort(ifstream & in, ofstream & out, int len) // сортировка ф
         buf[i] = ReadValue(in, eof); //чтение числа
     }
     sort(begin(buf), end(buf)); // сортировка
-    for(auto& val: buf )
+    for(auto & val: buf )
     {
-        out.write((char*)&val, sizeof(val));// запись в выбранный файл
+        out.write((char*) & val, sizeof(val));// запись в выбранный файл
     }
 }
 
@@ -103,7 +103,7 @@ void InsertionSort(int iterations, string outPath, string baseChildName, unsigne
         int smallestId = 0; //id наименьшего элемента
         do{ // сортировка вставкой по всем буферным файлам до тех пор, пока не не зкароются все
             smallestId = MinFinder(redVals, iterations, eofs); //нахожу Id наименьшего числа в массиве вставки
-            out.write((char*)&redVals[smallestId], sizeof(redVals[smallestId]));// записываю наименьшее в файл вывода
+            out.write((char*) & redVals[smallestId], sizeof(redVals[smallestId]));// записываю наименьшее в файл вывода
             redVals[smallestId] = ReadValue(sorts[smallestId], eof); // читаю новое число из файла, откуда произошла запись
 
             if (eof) // если достигнут конец буферного файла, то он закрывается, на место числа ставится заглушка в виде максимально возможного числа
@@ -156,11 +156,11 @@ int main()
         ifstream iff(inPath);
             if(!iff)
             {
-                cout<<"File is not presented, programm terminated"<< endl;
+                cout << "File is not presented, programm terminated" << endl;
                 return 2;
             }
             else 
-                cout<<"File is presented"<< endl;
+                cout << "File is presented" << endl;
         int fsize = FileSize(inPath); //размер читаемого файла
         if (fsize == -1)
         {
