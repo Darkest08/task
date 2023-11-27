@@ -19,16 +19,14 @@ int FileSize(string & filename) // функция определения дли�
     return size;
 }
 
-int ReadValue(ifstream & in, bool & eof) // функция чтения значения (поток чтения, возвращаемое значение (достигнут конец или нет))
+void ReadValue(ifstream & in, int & val, bool & eof) // функция чтения значения (поток чтения, возвращаемое значение (достигнут конец или нет))
 {
-    int val = 0;
 
     in.read((char*) & val, sizeof(val));
     if (in.eof())
     {
         eof = 1;
     }
-    return val;
 }
 
 void ShotSort(ifstream & in, ofstream & out, int len) // сортировка файла (входной поток, поток записи, длина файла)
@@ -37,7 +35,7 @@ void ShotSort(ifstream & in, ofstream & out, int len) // сортировка ф
     bool eof = 0; // заглушка
     for (int i=0; i < len; ++i) //чтение файла
     {
-        buf[i] = ReadValue(in, eof); //чтение числа
+        ReadValue(in, buf[i], eof); //чтение числа
     }
     sort(begin(buf), end(buf)); // сортировка
     for(auto & val: buf )
@@ -96,7 +94,7 @@ void InsertionSort(int iterations, string outPath, string baseChildName, unsigne
 
         for (int i = 0; i < iterations; ++i) // первичное считывание
         {
-            redVals[i] = ReadValue(sorts[i], eof);
+            ReadValue(sorts[i], redVals[i], eof);
             eofs[i] = 0;
         }
 
@@ -104,7 +102,7 @@ void InsertionSort(int iterations, string outPath, string baseChildName, unsigne
         do{ // сортировка вставкой по всем буферным файлам до тех пор, пока не не зкароются все
             smallestId = MinFinder(redVals, iterations, eofs); //нахожу Id наименьшего числа в массиве вставки
             out.write((char*) & redVals[smallestId], sizeof(redVals[smallestId]));// записываю наименьшее в файл вывода
-            redVals[smallestId] = ReadValue(sorts[smallestId], eof); // читаю новое число из файла, откуда произошла запись
+            ReadValue(sorts[smallestId],redVals[smallestId], eof); // читаю новое число из файла, откуда произошла запись
 
             if (eof) // если достигнут конец буферного файла, то он закрывается, на место числа ставится заглушка в виде максимально возможного числа
             {
