@@ -131,7 +131,6 @@ int main()
 
         // вводим имя файла
             string userInput = "";
-            unsigned int userInputInt = 0;
             cout << "Input sorting binary file name[Y] or select default(input.bin)[N] the file have to be located in the same directory as this program [Y/N]" << endl;
             cin >> userInput;
             if (userInput == "Y")
